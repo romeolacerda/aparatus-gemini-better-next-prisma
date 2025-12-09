@@ -14,7 +14,7 @@ export function ServiceItem({ service }: ServiceItemProps) {
 
   return (
     <div className="flex items-center justify-center gap-3 rounded-2xl border border-solid border-border bg-card p-3">
-      {/* Imagem */}
+      
       <div className="relative size-[110px] shrink-0 overflow-hidden rounded-[10px]">
         <Image
           src={service.imageUrl}
@@ -24,10 +24,10 @@ export function ServiceItem({ service }: ServiceItemProps) {
         />
       </div>
 
-      {/* Info */}
+      
       <div className="flex grow basis-0 flex-row items-center self-stretch">
         <div className="relative flex h-full min-h-0 min-w-0 grow basis-0 flex-col items-start justify-between">
-          {/* Service Info */}
+          
           <div className="flex h-[67.5px] w-full flex-col items-start gap-1 text-sm leading-[1.4]">
             <p className="w-full font-bold text-card-foreground">
               {service.name}
@@ -37,7 +37,7 @@ export function ServiceItem({ service }: ServiceItemProps) {
             </p>
           </div>
 
-          {/* Price and Button */}
+          
           <div className="flex w-full items-center justify-between">
             <p className="whitespace-pre text-sm font-bold leading-[1.4] text-card-foreground">
               {priceInReais}
