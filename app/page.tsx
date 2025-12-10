@@ -2,7 +2,6 @@ import { prisma } from "@/lib/prisma";
 import Image from "next/image";
 import banner from '../public/banner.png';
 import BarbershopItem from "./_components/barbershop-item";
-import BookingItem from "./_components/booking-item";
 import Footer from "./_components/footer";
 import Header from "./_components/header";
 import { PageContainer, PageSection, PageSectionScroller, PageSectionTitle } from "./_components/page";
@@ -32,19 +31,6 @@ export default async function Home() {
           sizes="100w"
           className="h-auto w-full"
         />
-
-        <PageSection>
-          <PageSectionTitle>
-            Agendamentos
-          </PageSectionTitle>
-          <BookingItem
-            serviceName="Corte de cabelo"
-            barbershopName="Barbearia do matuto"
-            barbershopImageUrl="https://utfs.io/f/c97a2dc9-cf62-468b-a851-bfd2bdde775f-16p.png"
-            date={new Date()}
-            status="confirmed"
-          />
-        </PageSection>
 
         <PageSection>
 
