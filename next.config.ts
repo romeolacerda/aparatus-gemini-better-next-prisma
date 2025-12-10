@@ -9,7 +9,13 @@ const nextConfig: NextConfig = {
         hostname: "utfs.io"
       }
     ]
-  }
+  },
+  experimental: {
+    serverComponentsExternalPackages: ["@prisma/client", "prisma"],
+  },
+  outputFileTracingIncludes: {
+    "/api/**/*": ["./app/generated/prisma/**/*"],
+  },
 };
 
 export default nextConfig;
