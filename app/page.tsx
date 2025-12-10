@@ -1,65 +1,102 @@
-import { prisma } from "@/lib/prisma";
-import Image from "next/image";
-import banner from "../public/banner.png";
-import BarbershopItem from "./_components/barbershop-item";
-import Footer from "./_components/footer";
-import Header from "./_components/header";
-import {
-  PageContainer,
-  PageSection,
-  PageSectionScroller,
-  PageSectionTitle,
-} from "./_components/page";
-import QuickSearchButtons from "./_components/quick-search-buttons";
-import SearchInput from "./_components/search-input";
+"use client";
 
-const Home = async () => {
-  const recommendedBarbershops = await prisma.barbershop.findMany({
-    orderBy: {
-      name: "asc",
-    },
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
+import { useState, useEffect, useRef } from "react";
+import { ChevronLeft } from "lucide-react";
+import Link from "next/link";
+import { ChatMessage } from "./chat/_components/chat-message";
+import { ChatInput } from "./chat/_components/chat-input";
+
+const INITIAL_MESSAGES = [
+  {
+    id: "system-welcome",
+    role: "system" as const,
+    parts: [
+      {
+        type: "text" as const,
+        text: "Seu assistente de agendamentos está online.",
+      },
+    ],
+  },
+  {
+    id: "assistant-welcome",
+    role: "assistant" as const,
+    parts: [
+      {
+        type: "text" as const,
+        text: "Olá! Sou o Aparatus, seu assistente pessoal.\n\nEstou aqui para te auxiliar a agendar seu corte ou barba, encontrar as barbearias disponíveis perto de você e responder às suas dúvidas.",
+      },
+    ],
+  },
+];
+
+export default function ChatPage() {
+  const [message, setMessage] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { messages, sendMessage, status } = useChat({
+    transport: new DefaultChatTransport({
+      api: "/api/chat",
+    }),
   });
-  const popularBarbershops = await prisma.barbershop.findMany({
-    orderBy: {
-      name: "desc",
-    },
-  });
+
+  console.log({ messages });
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (message.trim()) {
+      sendMessage({
+        text: message,
+      });
+      setMessage("");
+    }
+  };
+
+  const isLoading = status === "streaming" || status === "submitted";
+
   return (
-    <main>
-      <Header />
-      <PageContainer>
-        <SearchInput />
+    <div className="relative flex h-screen w-full flex-col overflow-hidden rounded-[20px] bg-background">
+      <div className="flex w-[390px] items-center justify-between pt-6 pr-5 pb-0 pl-5">
+        <Link href="/">
+          <ChevronLeft className="size-6 shrink-0" />
+        </Link>
+        <p className="font-merriweather text-[20px] leading-[1.4] tracking-[-1px] text-nowrap whitespace-pre text-foreground italic">
+          Aparatus
+        </p>
+        <div className="flex items-center justify-end gap-[15px]" />
+      </div>
 
-        <QuickSearchButtons />
-
-        <Image
-          src={banner}
-          alt="Agende agora!"
-          sizes="100vw"
-          className="h-auto w-full"
-        />
-
-        <PageSection>
-          <PageSectionTitle>Recomendados</PageSectionTitle>
-          <PageSectionScroller>
-            {recommendedBarbershops.map((barbershop) => (
-              <BarbershopItem key={barbershop.id} barbershop={barbershop} />
+      <div className="w-full flex-1 overflow-y-auto pb-24 [&::-webkit-scrollbar]:hidden">
+        {messages.length === 0
+          ? INITIAL_MESSAGES.map((msg) => (
+              <ChatMessage key={msg.id} message={msg} />
+            ))
+          : messages.map((msg, index) => (
+              <ChatMessage
+                key={msg.id}
+                message={msg}
+                isStreaming={
+                  status === "streaming" && index === messages.length - 1
+                }
+              />
             ))}
-          </PageSectionScroller>
-        </PageSection>
+        <div ref={messagesEndRef} />
+      </div>
 
-        <PageSection>
-          <PageSectionTitle>Populares</PageSectionTitle>
-          <PageSectionScroller>
-            {popularBarbershops.map((barbershop) => (
-              <BarbershopItem key={barbershop.id} barbershop={barbershop} />
-            ))}
-          </PageSectionScroller>
-        </PageSection>
-      </PageContainer>
-      <Footer />
-    </main>
+      <ChatInput
+        input={message}
+        onChange={(e) => setMessage(e.target.value)}
+        onSubmit={handleSubmit}
+        isLoading={isLoading}
+      />
+    </div>
   );
-};
-
-export default Home;
+}
