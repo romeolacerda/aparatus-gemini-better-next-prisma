@@ -50,6 +50,9 @@ export const createBookingCheckoutSession = actionClient
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}`,
       metadata: {
         date: date.toISOString(),
+        serviceId: service.id,
+        barbershopId: service.barbershopId,
+        userId: session.user.id,
       },
       line_items: [
         {
