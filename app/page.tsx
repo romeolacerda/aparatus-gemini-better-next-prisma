@@ -1,10 +1,10 @@
-import Image from "next/image";
-import Header from "./_components/header";
-import SearchInput from "./_components/search-input";
-import banner from "../public/banner.png";
 import { prisma } from "@/lib/prisma";
+import Image from "next/image";
+import bannerDesktop from "../public/banner-desktop.png";
+import bannerMobile from "../public/banner-mobile.png";
 import BarbershopItem from "./_components/barbershop-item";
 import Footer from "./_components/footer";
+import Header from "./_components/header";
 import {
   PageContainer,
   PageSection,
@@ -12,6 +12,8 @@ import {
   PageSectionTitle,
 } from "./_components/page";
 import QuickSearchButtons from "./_components/quick-search-buttons";
+import SearchInput from "./_components/search-input";
+
 
 const Home = async () => {
   const recommendedBarbershops = await prisma.barbershop.findMany({
@@ -24,6 +26,7 @@ const Home = async () => {
       name: "desc",
     },
   });
+
   return (
     <main>
       <Header />
@@ -32,12 +35,15 @@ const Home = async () => {
 
         <QuickSearchButtons />
 
-        <Image
-          src={banner}
-          alt="Agende agora!"
-          sizes="100vw"
-          className="h-auto w-full"
-        />
+        <picture>
+          <source media="(max-width: 768px)" srcSet={bannerMobile.src} />
+          <Image
+            src={bannerDesktop}
+            alt="Banner"
+            sizes="100vw"
+            className="w-full h-auto rounded-3xl"
+          />
+        </picture>
 
         <PageSection>
           <PageSectionTitle>Recomendados</PageSectionTitle>

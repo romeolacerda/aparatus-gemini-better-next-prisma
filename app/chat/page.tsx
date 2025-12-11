@@ -3,6 +3,7 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { ChevronLeft } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ChatInput } from "./_components/chat-input";
@@ -62,21 +63,21 @@ export default function ChatPage() {
 
   return (
     <div className="relative flex h-screen w-full flex-col overflow-hidden rounded-[20px] bg-background">
-      <div className="flex w-[390px] items-center justify-between pb-0 pl-5 pr-5 pt-6">
+      <div className="flex w-full items-center justify-between pb-0 pl-5 pr-5 pt-6">
         <Link href="/">
           <ChevronLeft className="size-6 shrink-0" />
         </Link>
-        <p className="font-merriweather whitespace-pre text-nowrap text-[20px] italic leading-[1.4] tracking-[-1px] text-foreground">
-          Aparatus
-        </p>
+        <Link href={"/"} >
+          <Image src="/logo.svg" alt="Aparatus" width={100} height={26.09} />
+        </Link>
         <div className="flex items-center justify-end gap-[15px]" />
       </div>
 
       <div className="flex-1 overflow-y-auto pb-24 [&::-webkit-scrollbar]:hidden">
         {messages.length === 0
           ? INITIAL_MESSAGES.map((msg) => (
-              <ChatMessage key={msg.id} message={msg} />
-            ))
+            <ChatMessage key={msg.id} message={msg} />
+          ))
           : messages.map((msg) => <ChatMessage key={msg.id} message={msg} />)}
         <div ref={messagesEndRef} />
       </div>
