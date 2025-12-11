@@ -59,9 +59,9 @@ export function ServiceItem({ service }: ServiceItemProps) {
 
   const formattedDate = selectedDate
     ? selectedDate.toLocaleDateString("pt-BR", {
-        day: "2-digit",
-        month: "short",
-      })
+      day: "2-digit",
+      month: "short",
+    })
     : "";
 
   const isConfirmDisabled = !selectedDate || !selectedTime;
@@ -77,7 +77,7 @@ export function ServiceItem({ service }: ServiceItemProps) {
     if (!selectedTime || !selectedDate) {
       return;
     }
-    const timeSplitted = selectedTime.split(":"); 
+    const timeSplitted = selectedTime.split(":");
     const hours = timeSplitted[0];
     const minutes = timeSplitted[1];
     const date = new Date(selectedDate);
@@ -100,9 +100,12 @@ export function ServiceItem({ service }: ServiceItemProps) {
       toast.error("Erro ao carregar Stripe");
       return;
     }
-    await stripe.redirectToCheckout({
-      sessionId: checkoutSessionResult.data.id,
-    });
+    if (!checkoutSessionResult.data?.url) {
+      toast.error("Erro ao obter URL do checkout");
+      return;
+    }
+
+    window.location.href = checkoutSessionResult.data.url;
   };
 
   return (
