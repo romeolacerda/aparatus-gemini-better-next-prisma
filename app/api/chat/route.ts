@@ -3,7 +3,21 @@ import { google } from "@ai-sdk/google";
 import z from "zod";
 import { prisma } from "@/lib/prisma";
 import { getDateAvailableTimeSlots } from "@/app/_actions/get-date-available-time-slots";
-import { createBooking } from "@/app/_actions/create-booking";
+import { createBookingCheckoutSession } from "@/app/_actions/create-booking-checkout-session";
+
+// Cache de checkouts criados recentemente (memória do servidor)
+const recentCheckouts = new Map<string, number>();
+
+// Limpa checkouts antigos a cada 5 minutos
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, timestamp] of recentCheckouts.entries()) {
+    // Remove entradas com mais de 10 minutos
+    if (now - timestamp > 10 * 60 * 1000) {
+      recentCheckouts.delete(key);
+    }
+  }
+}, 5 * 60 * 1000);
 
 export const POST = async (request: Request) => {
   const { messages } = await request.json();
@@ -54,17 +68,21 @@ export const POST = async (request: Request) => {
     - Preço
 
     Criação da reserva:
-    - Após o usuário confirmar explicitamente a escolha (ex: "confirmo", "pode agendar", "quero esse horário"), use a ferramenta createBooking
+    - Após o usuário confirmar explicitamente a escolha (ex: "confirmo", "pode agendar", "quero esse horário"), use a ferramenta createCheckoutSession
+    - IMPORTANTE: Use a ferramenta createCheckoutSession APENAS UMA VEZ por agendamento confirmado
+    - Se você já criou um checkout session nesta conversa, NÃO crie outro
     - Parâmetros necessários:
       * serviceId: ID do serviço escolhido
       * date: Data e horário no formato ISO (YYYY-MM-DDTHH:mm:ss) - exemplo: "2025-11-05T10:00:00"
-    - Se a criação for bem-sucedida (success: true), informe ao usuário que a reserva foi confirmada com sucesso
+    - Se a criação for bem-sucedida (success: true, url: "..."), informe ao usuário:
+      * "Perfeito! Estou redirecionando você para o pagamento. Aguarde um momento..."
     - Se houver erro (success: false), explique o erro ao usuário:
-      * Se o erro for "User must be logged in", informe que é necessário fazer login para criar uma reserva
+      * Se o erro for "Unauthorized", informe que é necessário fazer login para criar uma reserva
+      * Se o erro for "Duplicate booking", informe que já foi criado um agendamento para este horário
       * Para outros erros, informe que houve um problema e peça para tentar novamente
 
     Importante:
-    - NUNCA mostre informações técnicas ao usuário (barbershopId, serviceId, formatos ISO de data, etc.)
+    - NUNCA mostre informações técnicas ao usuário (barbershopId, serviceId, formatos ISO de data, URLs, etc.)
     - Seja sempre educado, prestativo e use uma linguagem informal e amigável
     - Não liste TODOS os horários disponíveis, sugira apenas 4-5 opções espaçadas ao longo do dia
     - Se não houver horários disponíveis, sugira uma data alternativa
@@ -149,9 +167,9 @@ export const POST = async (request: Request) => {
           };
         },
       }),
-      createBooking: tool({
+      createCheckoutSession: tool({
         description:
-          "Cria um agendamento para um serviço em uma data específica.",
+          "Cria uma sessão de checkout do Stripe para o agendamento de um serviço em uma data específica. ATENÇÃO: Use esta ferramenta APENAS UMA VEZ por confirmação do usuário.",
         inputSchema: z.object({
           serviceId: z.string().describe("ID do serviço"),
           date: z
@@ -159,21 +177,39 @@ export const POST = async (request: Request) => {
             .describe("Data em ISO String para a qual deseja agendar"),
         }),
         execute: async ({ serviceId, date }) => {
+          const bookingKey = `${serviceId}-${date}`;
+          
+          const lastCheckout = recentCheckouts.get(bookingKey);
+          if (lastCheckout && Date.now() - lastCheckout < 10 * 60 * 1000) {
+            console.log("Duplicate checkout attempt prevented:", bookingKey);
+            return {
+              success: false,
+              error: "Duplicate booking - já foi criado um agendamento para este horário nos últimos 10 minutos",
+            };
+          }
+
           const parsedDate = new Date(date);
-          const result = await createBooking({
+          const result = await createBookingCheckoutSession({
             serviceId,
             date: parsedDate,
           });
+          
           if (result.serverError || result.validationErrors) {
             return {
+              success: false,
               error:
                 result.validationErrors?._errors?.[0] ||
-                "Erro ao criar agendamento",
+                "Erro ao criar sessão de checkout",
             };
           }
+          
+          recentCheckouts.set(bookingKey, Date.now());
+          console.log("Checkout created successfully:", bookingKey);
+          
           return {
             success: true,
-            message: "Agendamento criado com sucesso",
+            url: result.data?.url,
+            checkoutSessionId: result.data?.id,
           };
         },
       }),

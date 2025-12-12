@@ -70,7 +70,6 @@ export const cancelBooking = actionClient
         });
       } catch (error) {
         if (error instanceof Stripe.errors.StripeError) {
-          console.error("Stripe refund error:", error.message);
           returnValidationErrors(inputSchema, {
             _errors: [
               "Erro ao processar reembolso. Entre em contato com o suporte.",

@@ -1,5 +1,6 @@
 "use client";
 
+import { Barbershop, BarbershopService } from "@/generated/prisma/client";
 import { loadStripe } from "@stripe/stripe-js";
 import { useQuery } from "@tanstack/react-query";
 import { ptBR } from "date-fns/locale";
@@ -7,9 +8,8 @@ import { useAction } from "next-safe-action/hooks";
 import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
-import { createBooking } from "../_actions/create-booking";
+import { createBookingCheckoutSession } from "../_actions/create-booking-checkout-session";
 import { getDateAvailableTimeSlots } from "../_actions/get-date-available-time-slots";
-import { Barbershop, BarbershopService } from "@/generated/prisma/client";
 import { Button } from "./ui/button";
 import { Calendar } from "./ui/calendar";
 import { Separator } from "./ui/separator";
@@ -20,7 +20,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "./ui/sheet";
-import { createBookingCheckoutSession } from "../_actions/create-booking-checkout-session";
 
 interface ServiceItemProps {
   service: BarbershopService & {
@@ -31,8 +30,7 @@ interface ServiceItemProps {
 export function ServiceItem({ service }: ServiceItemProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [selectedTime, setSelectedTime] = useState<string | undefined>();
-  const { executeAsync, isPending } = useAction(createBooking);
-  const { executeAsync: executeCreateBookingCheckoutSession } = useAction(
+  const { executeAsync: executeCreateBookingCheckoutSession, isPending } = useAction(
     createBookingCheckoutSession,
   );
   const [sheetIsOpen, setSheetIsOpen] = useState(false);

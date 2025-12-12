@@ -5,8 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../generated/prisma"
+  provider   = "prisma-client-js"
+  output     = "../generated/prisma"
   engineType = "client"
 }
 
@@ -48,7 +48,7 @@ model Booking {
   date           DateTime          @db.Timestamptz
   cancelled      Boolean?          @default(false)
   cancelledAt    DateTime?         @db.Timestamptz
-  stripeChargeId String?
+  stripeChargeId String?           @unique
 }
 
 model User {

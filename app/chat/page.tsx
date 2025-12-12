@@ -6,31 +6,9 @@ import { ChevronLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { INITIAL_MESSAGES } from "../config/constants";
 import { ChatInput } from "./_components/chat-input";
 import { ChatMessage } from "./_components/chat-message";
-
-const INITIAL_MESSAGES = [
-  {
-    id: "system-welcome",
-    role: "system" as const,
-    parts: [
-      {
-        type: "text" as const,
-        text: "Seu assistente de agendamentos está online.",
-      },
-    ],
-  },
-  {
-    id: "assistant-welcome",
-    role: "assistant" as const,
-    parts: [
-      {
-        type: "text" as const,
-        text: "Olá! Sou o Aparatus, seu assistente pessoal.\n\nEstou aqui para te auxiliar a agendar seu corte ou barba, encontrar as barbearias disponíveis perto de você e responder às suas dúvidas.",
-      },
-    ],
-  },
-];
 
 export default function ChatPage() {
   const [message, setMessage] = useState("");
@@ -70,7 +48,7 @@ export default function ChatPage() {
         <Link href={"/"} >
           <Image src="/logo.svg" alt="Aparatus" width={100} height={26.09} />
         </Link>
-        <div className="flex items-center justify-end gap-[15px]" />
+        
       </div>
 
       <div className="flex-1 overflow-y-auto pb-24 [&::-webkit-scrollbar]:hidden">
