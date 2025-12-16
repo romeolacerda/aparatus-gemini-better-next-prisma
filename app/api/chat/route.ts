@@ -178,7 +178,6 @@ export const POST = async (request: Request) => {
           
           const lastCheckout = recentCheckouts.get(bookingKey);
           if (lastCheckout && Date.now() - lastCheckout < 10 * 60 * 1000) {
-            console.log("Duplicate checkout attempt prevented:", bookingKey);
             return {
               success: false,
               error: "Duplicate booking - já foi criado um agendamento para este horário nos últimos 10 minutos",
@@ -201,7 +200,6 @@ export const POST = async (request: Request) => {
           }
           
           recentCheckouts.set(bookingKey, Date.now());
-          console.log("Checkout created successfully:", bookingKey);
           
           return {
             success: true,
