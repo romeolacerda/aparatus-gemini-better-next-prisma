@@ -5,14 +5,11 @@ import { prisma } from "@/lib/prisma";
 import { getDateAvailableTimeSlots } from "@/app/_actions/get-date-available-time-slots";
 import { createBookingCheckoutSession } from "@/app/_actions/create-booking-checkout-session";
 
-// Cache de checkouts criados recentemente (memória do servidor)
 const recentCheckouts = new Map<string, number>();
 
-// Limpa checkouts antigos a cada 5 minutos
 setInterval(() => {
   const now = Date.now();
   for (const [key, timestamp] of recentCheckouts.entries()) {
-    // Remove entradas com mais de 10 minutos
     if (now - timestamp > 10 * 60 * 1000) {
       recentCheckouts.delete(key);
     }
